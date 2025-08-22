@@ -39,44 +39,35 @@ def esperar_pokemon():
             screenshot = pyautogui.screenshot(region=POKEMON_REGION)
             screenshot.save(POKEMON_IMG_PATH)
             pyautogui.hotkey("alt", "tab")
-            time.sleep(0.1)
+            time.sleep(0.4) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 0.2)
             return contador
         else:
             contador += 1
 
-def extrair_nome_pokemon():
-    """Captura o nome mais repetido no resultado do Google Lens e registra no log"""
-    time.sleep(3)
-    screenshot = pyautogui.screenshot()
-    img_bgr = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+def clicar_icone_busca():
+    """Localiza e clica no ícone de busca por imagem"""
+    tentativas = 0
+    while True:
+        tentativas += 1
+        try:
+            pos = pyautogui.locateCenterOnScreen(ICONE_PATH, confidence=0.8)
+        except pyautogui.ImageNotFoundException:
+            pos = None
 
-    # Extrai texto da tela
-    texto = pytesseract.image_to_string(img_bgr, lang="por+eng")
-    texto = texto.replace("\n", " ").replace("\r", " ")
-
-    # Conta palavras
-    palavras = {}
-    for palavra in texto.split():
-        palavra_limpa = palavra.strip(".,!?:;()[]\"'").lower()
-        if (palavra_limpa 
-            and len(palavra_limpa) >= 4  # mínimo de 4 letras
-            and palavra_limpa not in palavras_banidas):
-            palavras[palavra_limpa] = palavras.get(palavra_limpa, 0) + 1
-
-    if not palavras:
-        print("❌ Nenhuma palavra válida encontrada!")
-        return None
-
-    # Pega a palavra mais repetida
-    nome_pokemon = max(palavras, key=palavras.get)
-    print(f"📋 Nome detectado: {nome_pokemon}")
-    
-    if nome_pokemon == "mime": # Problemas com Mr.Mime / Mr Mime.
-        nome_pokemon = "mr mime"
-
-    return nome_pokemon
+        if pos:
+            pyautogui.moveTo(pos)
+            pyautogui.click()
+            print(f"🖱️ Ícone de busca clicado!")
+            return True
+        else:
+            print(f"❌ Ícone não encontrado. Tentando novamente... ({tentativas})")
+            # Clique fora da tela para tentar atualizar a interface
+            pyautogui.click(1572, 383)
+            pyautogui.press('esc')
+            time.sleep(1.5)  # pequena pausa antes de tentar de novo
 
 def carregar_imagem_pokemon(caminho_imagem):
+    palavras_banidas = carregar_banlist()
     """Cola o caminho do arquivo e confirma a busca"""
     time.sleep(1)
     pyautogui.press("enter")
@@ -122,8 +113,43 @@ def carregar_imagem_pokemon(caminho_imagem):
 
     return nome_pokemon
 
-def enviar_comando_discord(nome_pokemon,check_fail,tentativa):
+def extrair_nome_pokemon():
+    palavras_banidas = carregar_banlist()
+    """Captura o nome mais repetido no resultado do Google Lens e registra no log"""
+    time.sleep(3)
+    screenshot = pyautogui.screenshot()
+    img_bgr = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+
+    # Extrai texto da tela
+    texto = pytesseract.image_to_string(img_bgr, lang="por+eng")
+    texto = texto.replace("\n", " ").replace("\r", " ")
+
+    # Conta palavras
+    palavras = {}
+    for palavra in texto.split():
+        palavra_limpa = palavra.strip(".,!?:;()[]\"'").lower()
+        if (palavra_limpa 
+            and len(palavra_limpa) >= 4  # mínimo de 4 letras
+            and palavra_limpa not in palavras_banidas):
+            palavras[palavra_limpa] = palavras.get(palavra_limpa, 0) + 1
+
+    if not palavras:
+        print("❌ Nenhuma palavra válida encontrada!")
+        return None
+
+    # Pega a palavra mais repetida
+    nome_pokemon = max(palavras, key=palavras.get)
+    print(f"📋 Nome detectado: {nome_pokemon}")
+    
+    if nome_pokemon == "mime": # Problemas com Mr.Mime / Mr Mime.
+        nome_pokemon = "mr mime"
+
+    return nome_pokemon
+
+def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
     """Volta ao Discord e digita o comando"""
+    comando_restante = f"catch {nome_pokemon}"
+    
     if not nome_pokemon:
         return
     if tentativa > 3:
@@ -144,13 +170,10 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa):
     pyautogui.typewrite("@Poketwo")
     pyautogui.press("tab")
     time.sleep(0.5)
-
-    # Digita o comando de captura
-    comando_restante = f"catch {nome_pokemon}"
     pyautogui.typewrite(comando_restante)
     pyautogui.press("enter")
     print(f"💬 Comando enviado: @Poketwo{comando_restante}")
-    time.sleep(3)
+    time.sleep(5) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 3)
 
     check_fail = 0 
 
@@ -159,6 +182,7 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa):
     print("Tentativa:", tentativa)
     if pos:
         print("Encontrou a imagem do FAIL")
+        contador += 2
         #screenshot = pyautogui.screenshot(region=WRONG_POKE)
         #screenshot.save("debug_fail_area.png")
         if tentativa > 0:
@@ -181,6 +205,10 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa):
             check_fail = 0
             if achievement:
                 print("Conqusita alcançada")
-                check_fail = 0    
-
-    return check_fail,tentativa
+                check_fail = 0
+        else:    
+            print("Nada encontrado")
+            pyautogui.typewrite(".clear 5")
+            pyautogui.press("enter")
+            check_fail = 2
+    return check_fail,tentativa,contador

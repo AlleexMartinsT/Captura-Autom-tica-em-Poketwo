@@ -26,6 +26,7 @@ pokemon_validos = carregar_pokemons()
 
 if not esta_aberto("chrome.exe"):
    subprocess.Popen([chrome_path,url])
+   time.sleep(1)
 else:
     print("O Chrome já está aberto!")
 
@@ -52,11 +53,10 @@ while True:
                 if clicar_icone_busca():
                     carregar_imagem_pokemon(POKEMON_IMG_PATH)
                     time.sleep(2.5)  # espera o Lens carregar o resultado
-                    # Loop de tentativas até acertar o nome
-                    while check_fail:
+                    while check_fail: # Loop de tentativas até acertar o nome
                         nome = extrair_nome_pokemon()
 
-                        check_fail, tentativa = enviar_comando_discord(nome, check_fail, tentativa)
+                        check_fail, tentativa, contador = enviar_comando_discord(nome, check_fail, tentativa, contador)
                         if check_fail == 2:
                             break
                         if check_fail:

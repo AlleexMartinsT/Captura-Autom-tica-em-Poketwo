@@ -2,7 +2,6 @@ from functions.bibliotecas import *
 from paths.path import *
 from regions.region_ss import RATE_LIMIT_REGION
 from functions.global_var import *
-from global_var import *
 
 def checar_rate_limit():
     """Verifica se o aviso de flood do Discord apareceu"""
@@ -14,28 +13,6 @@ def checar_rate_limit():
         pos = None
     return pos is not None
 
-def clicar_icone_busca():
-    """Localiza e clica no ícone de busca por imagem"""
-    tentativas = 0
-    while True:
-        tentativas += 1
-        try:
-            pos = pyautogui.locateCenterOnScreen(ICONE_PATH, confidence=0.8)
-        except pyautogui.ImageNotFoundException:
-            pos = None
-
-        if pos:
-            pyautogui.moveTo(pos)
-            pyautogui.click()
-            print(f"🖱️ Ícone de busca clicado!")
-            return True
-        else:
-            print(f"❌ Ícone não encontrado. Tentando novamente... ({tentativas})")
-            # Clique fora da tela para tentar atualizar a interface
-            pyautogui.click(1572, 383)
-            pyautogui.press('esc')
-            time.sleep(1.5)  # pequena pausa antes de tentar de novo
-  
 def check_orb_match(screenshot_gray, template_gray, min_matches=20):
     """Verifica similaridade usando ORB"""
     orb = cv2.ORB_create()
@@ -128,17 +105,12 @@ def is_google_screen():
 
 # ====== MANIPULAÇÃO DA BAN_LIST ======
 
-def carregar_banlist():
-    if not os.path.exists(BANLIST_FILE):
-        return []
-    with open(BANLIST_FILE, "r", encoding="utf-8") as f:
-        return [linha.strip() for linha in f.readlines()]
-
 def salvar_banlist(lista):
     with open(BANLIST_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(lista))
 
 def adicionar_banida(palavra):
+    palavras_banidas = carregar_banlist()
     pokemon_validos = carregar_pokemons()
     """Adiciona uma nova palavra na banlist.txt se ainda não estiver lá"""
     if palavra not in pokemon_validos:
@@ -149,6 +121,12 @@ def adicionar_banida(palavra):
     else:
         print("Esta palavra é um pokemon!")
 
+def carregar_banlist():
+    if not os.path.exists(BANLIST_FILE):
+        return []
+    with open(BANLIST_FILE, "r", encoding="utf-8") as f:
+        return [linha.strip() for linha in f.readlines()]
+    
 # ====== MANIPULAÇÃO DA POKEMON_LIST ======
 
 def carregar_pokemons():
