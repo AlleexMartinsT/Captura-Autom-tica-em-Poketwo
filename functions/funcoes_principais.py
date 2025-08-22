@@ -143,12 +143,16 @@ def extrair_nome_pokemon():
     
     if nome_pokemon == "mime": # Problemas com Mr.Mime / Mr Mime.
         nome_pokemon = "mr mime"
+    elif nome_pokemon == "flabébé": # Problemas com Flabébé / Flabebe.
+        nome_pokemon = "flabebe"
 
     return nome_pokemon
 
 def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
     """Volta ao Discord e digita o comando"""
     comando_restante = f"catch {nome_pokemon}"
+    palavras_banidas = carregar_banlist()
+    adicionar_banida(nome_pokemon, palavras_banidas)
     
     if not nome_pokemon:
         return
@@ -211,4 +215,5 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
             pyautogui.typewrite(".clear 5")
             pyautogui.press("enter")
             check_fail = 2
+            
     return check_fail,tentativa,contador

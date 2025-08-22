@@ -109,7 +109,7 @@ def salvar_banlist(lista):
     with open(BANLIST_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(lista))
 
-def adicionar_banida(palavra):
+def adicionar_banida(palavra, palavras_banidas):
     palavras_banidas = carregar_banlist()
     pokemon_validos = carregar_pokemons()
     """Adiciona uma nova palavra na banlist.txt se ainda não estiver lá"""
