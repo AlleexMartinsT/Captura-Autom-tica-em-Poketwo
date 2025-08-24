@@ -2,7 +2,7 @@ from functions.bibliotecas import *
 from paths.path import *
 from functions.funcoes_principais import *
 from regions.region_ss import *
-from functions.global_var import *
+from functions.config import *
 from functions.funcoes_aux import *
 
 # Garante que 'locateOnScreen' NÃO levante exceção quando não achar
@@ -21,6 +21,8 @@ if template is None:
     print(f"ERRO: Não foi possível carregar o template '{TEMPLATE_PATH}'")
     exit()
 
+interface()
+
 palavras_banidas = carregar_banlist()
 pokemon_validos = carregar_pokemons()
 
@@ -37,7 +39,7 @@ alt_tab()
         
 print("Pressione qualquer tecla para continuar...")
 keyboard.read_event()
- 
+
 while True:
     contador = esperar_pokemon()
     if contador == -1:
@@ -86,4 +88,4 @@ while True:
             else:
                 print(f"❌ Não é a tela do Google. Tentando novamente... ({tentativas})")
                 pyautogui.hotkey('alt', 'tab')
-                time.sleep(0.2)
+                time.sleep(0.2) 

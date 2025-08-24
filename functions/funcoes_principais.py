@@ -1,20 +1,27 @@
 from functions.bibliotecas import *
 from paths.path import *
 from regions.region_ss import POKEMON_REGION, POKEMON_REGION_UP, WRONG_POKE
-from functions.funcoes_aux import checar_rate_limit
-from functions.global_var import *
+from functions.config import *
 from functions.funcoes_aux import *
+from functions import config
 
 def esperar_pokemon():  
     delay_envio = 0.2
     print("🔄 Iniciando envio de mensagens para spawnar Pokémon...")
     contador = 1
     while True:
+        time.sleep(0.5)
+        if discord_crash():
+            print("O Discord estava fechado ou com crash. Abrindo o Discord...")
+            pos = pyautogui.locateOnScreen("discord_button.png", confidence=0.8)
+            pyautogui.moveTo(pos)
+            pyautogui.click()
+            time.sleep(3)
+            print("Discord aberto com sucesso!")
         if contador > 60:
             print("⚠️ Contador excedeu 60. Reiniciando...")
             contador = -1
             return contador
-        time.sleep(0.5)
         if checar_rate_limit():
             delay_envio += 0.5
             print(f"⚠️ Rate limit detectado! Novo delay: {delay_envio:.1f}s")
@@ -39,7 +46,7 @@ def esperar_pokemon():
             screenshot = pyautogui.screenshot(region=POKEMON_REGION)
             screenshot.save(POKEMON_IMG_PATH)
             pyautogui.hotkey("alt", "tab")
-            time.sleep(0.4) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 0.2)
+            time.sleep(0.2) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 0.2)
             return contador
         else:
             contador += 1
@@ -107,9 +114,6 @@ def carregar_imagem_pokemon(caminho_imagem):
     # Pega a palavra mais repetida
     nome_pokemon = max(palavras, key=palavras.get)
     print(f"📋 Nome detectado: {nome_pokemon}")
-    
-    if nome_pokemon == "mime": # Problemas com Mr.Mime / Mr Mime.
-        nome_pokemon = "mr mime"
 
     return nome_pokemon
 
@@ -177,7 +181,7 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
     pyautogui.typewrite(comando_restante)
     pyautogui.press("enter")
     print(f"💬 Comando enviado: @Poketwo{comando_restante}")
-    time.sleep(5) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 3)
+    time.sleep(3) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 3)
 
     check_fail = 0 
 
@@ -217,3 +221,51 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
             check_fail = 2
             
     return check_fail,tentativa,contador
+
+def interface():
+    root = tk.Tk()
+    root.title("Configuração de Time Sleep")
+
+    largura_janela = 300
+    altura_janela = 200
+    largura_tela = root.winfo_screenwidth()
+    altura_tela = root.winfo_screenheight()
+    pos_x = (largura_tela // 2) - (largura_janela // 2)
+    pos_y = (altura_tela // 2) - (altura_janela // 2)
+    root.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
+    
+    tk.Label(root, text="Tempo para abrir Discord:").grid(row=0, column=0, sticky="w")
+    entry_discord = tk.Entry(root)
+    entry_discord.insert(0, str(config.SLEEP_DISCORD))
+    entry_discord.grid(row=0, column=1)
+    
+    tk.Label(root, text="Tempo para Lens carregar:").grid(row=1, column=0, sticky="w")
+    entry_lens = tk.Entry(root)
+    entry_lens.insert(0, str(config.SLEEP_LENS))
+    entry_lens.grid(row=1, column=1)
+    
+    tk.Label(root, text="Tempo entre tentativas:").grid(row=2, column=0, sticky="w")
+    entry_retry = tk.Entry(root)
+    entry_retry.insert(0, str(config.SLEEP_RETRY))
+    entry_retry.grid(row=2, column=1)
+    
+    tk.Label(root, text="Tempo ALT+TAB:").grid(row=3, column=0, sticky="w")
+    entry_alt_tab = tk.Entry(root)
+    entry_alt_tab.insert(0, str(config.SLEEP_ALT_TAB))
+    entry_alt_tab.grid(row=3, column=1)
+    
+    def salvar_config():
+        try:
+            config.SLEEP_DISCORD = float(entry_discord.get())
+            config.SLEEP_LENS = float(entry_lens.get())
+            config.SLEEP_RETRY = float(entry_retry.get())
+            config.SLEEP_ALT_TAB = float(entry_alt_tab.get())
+            messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
+        except ValueError:
+            messagebox.showerror("Erro", "Digite apenas números válidos.")
+
+    tk.Button(root, text="Salvar", command=salvar_config).grid(row=4, columnspan=2, pady=10)
+    
+    return root.mainloop()
+
+    

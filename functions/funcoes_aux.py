@@ -1,7 +1,8 @@
 from functions.bibliotecas import *
 from paths.path import *
 from regions.region_ss import RATE_LIMIT_REGION
-from functions.global_var import *
+from functions.config import *
+from functions.funcoes_principais import *
 
 def checar_rate_limit():
     """Verifica se o aviso de flood do Discord apareceu"""
@@ -78,8 +79,8 @@ def clear_mensagem(contador):
 def alt_tab():
     for sufixo in ["Chrome", " - Discord"]:
         janelas = [w for w in gw.getAllWindows() if w.title.endswith(sufixo)]
-    if janelas:
-        focar_janela(janelas[0])
+        if janelas:
+            focar_janela(janelas[0])
     
 def esta_aberto(processo_nome):
     for proc in psutil.process_iter(['name']):
@@ -102,6 +103,16 @@ def is_google_screen():
 
     print(f"ORB: {orb_result} | OCR: {ocr_result}")
     return orb_result or ocr_result
+
+def discord_crash():
+    """Verifica se o Discord travou"""
+    try:
+        pos = pyautogui.locateOnScreen(DISCORD_CRASH, confidence=0.8)
+        screenshot = pyautogui.screenshot()
+        screenshot.save(BASE_DIR + "/images/debug_discord_crash.png")
+    except pyautogui.ImageNotFoundException:
+        pos = None
+    return pos is not None
 
 # ====== MANIPULAÇÃO DA BAN_LIST ======
 
@@ -141,4 +152,3 @@ def carregar_pokemons():
             for linha in f.readlines()
             if linha.strip()  # ignora linhas em branco
         ] 
-
