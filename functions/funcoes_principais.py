@@ -7,6 +7,7 @@ from functions import config
 
 def esperar_pokemon():  
     delay_envio = 0.2
+    monitorar_parada()
     print("🔄 Iniciando envio de mensagens para spawnar Pokémon...")
     contador = 1
     while True:
@@ -233,36 +234,39 @@ def interface():
     pos_x = (largura_tela // 2) - (largura_janela // 2)
     pos_y = (altura_tela // 2) - (altura_janela // 2)
     root.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
+
+    opcoes = ["0.5", "1.0", "1.5", "2.0"]
     
-    tk.Label(root, text="Tempo para abrir Discord:").grid(row=0, column=0, sticky="w")
-    entry_discord = tk.Entry(root)
-    entry_discord.insert(0, str(config.SLEEP_DISCORD))
-    entry_discord.grid(row=0, column=1)
-    
-    tk.Label(root, text="Tempo para Lens carregar:").grid(row=1, column=0, sticky="w")
-    entry_lens = tk.Entry(root)
-    entry_lens.insert(0, str(config.SLEEP_LENS))
-    entry_lens.grid(row=1, column=1)
-    
-    tk.Label(root, text="Tempo entre tentativas:").grid(row=2, column=0, sticky="w")
-    entry_retry = tk.Entry(root)
-    entry_retry.insert(0, str(config.SLEEP_RETRY))
-    entry_retry.grid(row=2, column=1)
-    
-    tk.Label(root, text="Tempo ALT+TAB:").grid(row=3, column=0, sticky="w")
-    entry_alt_tab = tk.Entry(root)
-    entry_alt_tab.insert(0, str(config.SLEEP_ALT_TAB))
-    entry_alt_tab.grid(row=3, column=1)
+    tk.Label(root, text="Tempo para abrir Discord:").grid(row=0, column=0, sticky="w", padx=5, pady=5)
+    combo_discord = ttk.Combobox(root, values=opcoes, state="readonly")
+    combo_discord.set(str(config.SLEEP_DISCORD))
+    combo_discord.grid(row=0, column=1, padx=5, pady=5)
+
+    tk.Label(root, text="Tempo para Lens carregar:").grid(row=1, column=0, sticky="w", padx=5, pady=5)
+    combo_lens = ttk.Combobox(root, values=opcoes, state="readonly")
+    combo_lens.set(str(config.SLEEP_LENS))
+    combo_lens.grid(row=1, column=1, padx=5, pady=5)
+
+    tk.Label(root, text="Tempo entre tentativas:").grid(row=2, column=0, sticky="w", padx=5, pady=5)
+    combo_retry = ttk.Combobox(root, values=opcoes, state="readonly")
+    combo_retry.set(str(config.SLEEP_RETRY))
+    combo_retry.grid(row=2, column=1, padx=5, pady=5)
+
+    tk.Label(root, text="Tempo ALT+TAB:").grid(row=3, column=0, sticky="w", padx=5, pady=5)
+    combo_alt_tab = ttk.Combobox(root, values=opcoes, state="readonly")
+    combo_alt_tab.set(str(config.SLEEP_ALT_TAB))
+    combo_alt_tab.grid(row=3, column=1, padx=5, pady=5)
     
     def salvar_config():
         try:
-            config.SLEEP_DISCORD = float(entry_discord.get())
-            config.SLEEP_LENS = float(entry_lens.get())
-            config.SLEEP_RETRY = float(entry_retry.get())
-            config.SLEEP_ALT_TAB = float(entry_alt_tab.get())
+            config.SLEEP_DISCORD = float(combo_discord.get())
+            config.SLEEP_LENS = float(combo_lens.get())
+            config.SLEEP_RETRY = float(combo_retry.get())
+            config.SLEEP_ALT_TAB = float(combo_alt_tab.get())
             messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
+            root.destroy()
         except ValueError:
-            messagebox.showerror("Erro", "Digite apenas números válidos.")
+            messagebox.showerror("Erro", "Selecione apenas valores válidos.")
 
     tk.Button(root, text="Salvar", command=salvar_config).grid(row=4, columnspan=2, pady=10)
     

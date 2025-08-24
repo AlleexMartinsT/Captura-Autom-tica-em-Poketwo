@@ -14,5 +14,6 @@ import pygetwindow as gw
 from pywinauto import Application
 import keyboard
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox,ttk
 import config
+import sys

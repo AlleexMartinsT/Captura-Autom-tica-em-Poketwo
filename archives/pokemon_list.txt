@@ -536,6 +536,8 @@ Dustox
 
 Lotad
 
+Glimmet
+
 Lombre
 
 Ludicolo
@@ -1867,3 +1869,11 @@ Galarian Articuno
 Galarian Zapdos
 
 Galarian Moltres
+Flamigo
+Cyclizar
+Finizen
+Nacli
+Scovillain
+Cetoddle
+Tandemaus
+Tadbulb

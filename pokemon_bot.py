@@ -28,14 +28,14 @@ pokemon_validos = carregar_pokemons()
 
 if not esta_aberto("chrome.exe"):
    subprocess.Popen([chrome_path,url])
-   time.sleep(1)
+   time.sleep(1) #time.sleep fixo, não alterar.
 else:
     print("O Chrome já está aberto!")
 
 adicionar_cabecalho(BANLIST_FILE)
 adicionar_cabecalho(LOG_FILE)
 
-alt_tab()
+alt_tab("")
         
 print("Pressione qualquer tecla para continuar...")
 keyboard.read_event()
@@ -63,7 +63,7 @@ while True:
                             break
                         if check_fail:
                             print("❌ Nome incorreto. Tentando novamente no Google Lens...")
-                            pyautogui.hotkey("alt", "tab")  # volta para o Chrome
+                            alt_tab("Chrome")
                             time.sleep(0.5)
                             clicar_icone_busca()
                             carregar_imagem_pokemon(POKEMON_IMG_PATH)
@@ -77,15 +77,11 @@ while True:
                                 print(f"📝 Nome registrado em {log_path}")
                             except Exception as e:
                                 print(f"❌ Erro ao registrar no log: {e}")
-                            print("Iniciando time sleep de 0.5")
                             time.sleep(0.5)
-                            print("Concluido")
-                            print("Iniciando contador de clear")
                             clear_mensagem(contador)
-                            print("Contador de clear concluido")
                             break
                 break
             else:
                 print(f"❌ Não é a tela do Google. Tentando novamente... ({tentativas})")
-                pyautogui.hotkey('alt', 'tab')
+                alt_tab("")
                 time.sleep(0.2) 

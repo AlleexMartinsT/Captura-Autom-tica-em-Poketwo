@@ -1,6 +1,6 @@
 from functions.bibliotecas import *
 from paths.path import *
-from regions.region_ss import RATE_LIMIT_REGION
+from regions.region_ss import RATE_LIMIT_REGION,POKEMON_REGION
 from functions.config import *
 from functions.funcoes_principais import *
 
@@ -72,15 +72,58 @@ def adicionar_cabecalho(arquivo):
 def clear_mensagem(contador):
     pyautogui.typewrite(f".clear {contador+3}") 
     pyautogui.press("enter")
-    time.sleep(1.5)
-  
+    time.sleep(1.5)  # espera o Discord processar o comando
+
+def check_clear_mensagem(contador, region=POKEMON_REGION):
+    """
+    Executa o comando .clear e espera até que a tela mude de fato.
+    :param contador: número usado no comando
+    :param region: região do Discord a capturar (x, y, w, h)
+    """
+    pyautogui.typewrite(f".clear {contador+3}") 
+    pyautogui.press("enter")
+
+    # OCR inicial
+    ref_texto = extrair_texto(region)
+    print("📋 Texto inicial capturado")
+
+    tentativas = 0
+    while True:
+        atual_texto = extrair_texto(region)
+        if atual_texto != ref_texto and atual_texto.strip():
+            print("✅ Detecção: tela mudou após o .clear")
+            break
+        time.sleep(0.3)
+        tentativas += 1
+        if tentativas > 50:  # timeout ~15s
+            print("⚠️ Timeout: tela não mudou")
+            break
+
+def extrair_texto(region=POKEMON_REGION):
+    """Captura a tela e retorna o texto OCR"""
+    screenshot = pyautogui.screenshot(region=region)
+    img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+
+    # 🔧 pré-processamento (melhora o OCR no Discord)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)   # escala de cinza
+    _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)  # binariza
+
+    texto = pytesseract.image_to_string(thresh, lang="por+eng")
+    return texto.strip()
+
 # ====== MANIPULAÇÃO DE TELA ======
 
-def alt_tab():
-    for sufixo in ["Chrome", " - Discord"]:
-        janelas = [w for w in gw.getAllWindows() if w.title.endswith(sufixo)]
-        if janelas:
-            focar_janela(janelas[0])
+def alt_tab(p):
+    if p == "Chrome":
+        for sufixo in ["Chrome"]:
+            print("Tentando focar janela do Chrome...")
+            janelas = [w for w in gw.getAllWindows() if w.title.endswith(sufixo)]
+            focar_janela(janelas[0]) # Foca a janela do Chrome
+    else:
+        for sufixo in ["Chrome", " - Discord"]:
+            janelas = [w for w in gw.getAllWindows() if w.title.endswith(sufixo)]
+            if janelas:
+                focar_janela(janelas[0])
     
 def esta_aberto(processo_nome):
     for proc in psutil.process_iter(['name']):
@@ -114,6 +157,9 @@ def discord_crash():
         pos = None
     return pos is not None
 
+def monitorar_parada():
+    print("Pressione / a qualquer momento para parar o bot.")
+    keyboard.add_hotkey('ctrl+alt+s', lambda: (print("⏹️ Bot interrompido pelo usuário."), sys.exit()))
 # ====== MANIPULAÇÃO DA BAN_LIST ======
 
 def salvar_banlist(lista):
