@@ -7,11 +7,10 @@ from functions import config
 
 def esperar_pokemon():  
     delay_envio = 0.2
-    monitorar_parada()
     print("🔄 Iniciando envio de mensagens para spawnar Pokémon...")
     contador = 1
     while True:
-        time.sleep(0.5)
+        time.sleep(0.3)  # pequena pausa para evitar uso excessivo da CPU
         if discord_crash():
             print("O Discord estava fechado ou com crash. Abrindo o Discord...")
             pos = pyautogui.locateOnScreen("discord_button.png", confidence=0.8)
@@ -46,8 +45,8 @@ def esperar_pokemon():
             """Captura a área do Pokémon no Discord e salva"""
             screenshot = pyautogui.screenshot(region=POKEMON_REGION)
             screenshot.save(POKEMON_IMG_PATH)
-            pyautogui.hotkey("alt", "tab")
-            time.sleep(0.2) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 0.2)
+            alt_tab("Chrome")
+            time.sleep(SLEEP_ALT_TAB) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 0.2)
             return contador
         else:
             contador += 1
@@ -72,62 +71,31 @@ def clicar_icone_busca():
             # Clique fora da tela para tentar atualizar a interface
             pyautogui.click(1572, 383)
             pyautogui.press('esc')
-            time.sleep(1.5)  # pequena pausa antes de tentar de novo
+            time.sleep(1)  # pequena pausa antes de tentar de novo
 
 def carregar_imagem_pokemon(caminho_imagem):
-    palavras_banidas = carregar_banlist()
     """Cola o caminho do arquivo e confirma a busca"""
     time.sleep(1)
     pyautogui.press("enter")
-    time.sleep(1)
+    time.sleep(SLEEP_CTRLV)
     pyperclip.copy(caminho_imagem)
     pyautogui.hotkey("ctrl", "v")  # Cola o caminho
-    time.sleep(1)
+    time.sleep(0.5)
     pyautogui.press("enter")
     print("📸 Imagem do Pokémon carregada para pesquisa!")
-    time.sleep(3)
-
-    """Captura o nome mais repetido no resultado do Google Lens e registra no log"""
-    screenshot = pyautogui.screenshot()
-    img_bgr = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-
-    # Extrai texto da tela
-    texto = pytesseract.image_to_string(img_bgr, lang="por+eng")
-    texto = texto.replace("\n", " ").replace("\r", " ")
-
-     # Aguarda carregar e clica fora da área para limpar a tela
-    pyautogui.click(1572, 383)
-    pyautogui.press('esc')
-    print("🖱️ Clique fora da imagem para preparar próxima captura!")
-    # Conta palavras
-    palavras = {}   
-    for palavra in texto.split():
-        palavra_limpa = palavra.strip(".,!?:;()[]\"'").lower()
-        if (palavra_limpa 
-            and len(palavra_limpa) >= 4  # mínimo de 4 letras
-            and palavra_limpa not in palavras_banidas):
-            palavras[palavra_limpa] = palavras.get(palavra_limpa, 0) + 1
-
-    if not palavras:
-        print("❌ Nenhuma palavra válida encontrada!")
-        return None
-
-    # Pega a palavra mais repetida
-    nome_pokemon = max(palavras, key=palavras.get)
-    print(f"📋 Nome detectado: {nome_pokemon}")
-
-    return nome_pokemon
 
 def extrair_nome_pokemon():
     palavras_banidas = carregar_banlist()
     """Captura o nome mais repetido no resultado do Google Lens e registra no log"""
-    time.sleep(3)
     screenshot = pyautogui.screenshot()
     img_bgr = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
 
     # Extrai texto da tela
     texto = pytesseract.image_to_string(img_bgr, lang="por+eng")
     texto = texto.replace("\n", " ").replace("\r", " ")
+    pyautogui.click(1572, 383)
+    pyautogui.press('esc')
+    print("🖱️ Clique fora da imagem para preparar próxima captura!")
 
     # Conta palavras
     palavras = {}
@@ -156,8 +124,6 @@ def extrair_nome_pokemon():
 def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
     """Volta ao Discord e digita o comando"""
     comando_restante = f"catch {nome_pokemon}"
-    palavras_banidas = carregar_banlist()
-    adicionar_banida(nome_pokemon, palavras_banidas)
     
     if not nome_pokemon:
         return
@@ -168,7 +134,7 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
         check_fail = 2
         return check_fail,tentativa
         
-    pyautogui.hotkey("alt", "tab")  # volta para o Discord
+    alt_tab("Discord")  # volta para o Discord
     pyautogui.press("enter")
     time.sleep(0.5)
     
@@ -203,9 +169,12 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
             print("usando pokemon_region")
             screenshot = pyautogui.screenshot(region=POKEMON_REGION)
             screenshot.save(POKEMON_IMG_PATH)
+        print("adicionando palavra banida")
         adicionar_banida(nome_pokemon)
         tentativa += 1
+        print("tentativa +1")
         check_fail = 1
+        print("check_fail=1")
     else:
         pos = pyautogui.locateOnScreen(POKEMON_CAPTURED, confidence=0.6, region=WRONG_POKE)
         achievement = pyautogui.locateOnScreen(ACHIEVEMENT, confidence=0.8, region=WRONG_POKE)
@@ -220,7 +189,7 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
             pyautogui.typewrite(".clear 5")
             pyautogui.press("enter")
             check_fail = 2
-            
+    print("saindo do return")
     return check_fail,tentativa,contador
 
 def interface():
@@ -236,6 +205,7 @@ def interface():
     root.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
 
     opcoes = ["0.5", "1.0", "1.5", "2.0"]
+    altTab_capturaPokemonDiscord = ["0.2", "0.5", "1.0"]
     
     tk.Label(root, text="Tempo para abrir Discord:").grid(row=0, column=0, sticky="w", padx=5, pady=5)
     combo_discord = ttk.Combobox(root, values=opcoes, state="readonly")
@@ -247,13 +217,13 @@ def interface():
     combo_lens.set(str(config.SLEEP_LENS))
     combo_lens.grid(row=1, column=1, padx=5, pady=5)
 
-    tk.Label(root, text="Tempo entre tentativas:").grid(row=2, column=0, sticky="w", padx=5, pady=5)
+    tk.Label(root, text="Tempo para o Ctrl+V no google").grid(row=2, column=0, sticky="w", padx=5, pady=5)
     combo_retry = ttk.Combobox(root, values=opcoes, state="readonly")
-    combo_retry.set(str(config.SLEEP_RETRY))
+    combo_retry.set(str(config.SLEEP_CTRLV))
     combo_retry.grid(row=2, column=1, padx=5, pady=5)
 
     tk.Label(root, text="Tempo ALT+TAB:").grid(row=3, column=0, sticky="w", padx=5, pady=5)
-    combo_alt_tab = ttk.Combobox(root, values=opcoes, state="readonly")
+    combo_alt_tab = ttk.Combobox(root, values=altTab_capturaPokemonDiscord, state="readonly")
     combo_alt_tab.set(str(config.SLEEP_ALT_TAB))
     combo_alt_tab.grid(row=3, column=1, padx=5, pady=5)
     
@@ -261,7 +231,7 @@ def interface():
         try:
             config.SLEEP_DISCORD = float(combo_discord.get())
             config.SLEEP_LENS = float(combo_lens.get())
-            config.SLEEP_RETRY = float(combo_retry.get())
+            config.SLEEP_CTRLV = float(combo_retry.get())
             config.SLEEP_ALT_TAB = float(combo_alt_tab.get())
             messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
             root.destroy()

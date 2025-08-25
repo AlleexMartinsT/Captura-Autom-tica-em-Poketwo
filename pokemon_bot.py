@@ -11,7 +11,7 @@ try:
 except Exception:
     pass
 
-# ====== CONFIGURAÇÕES ======
+# ====== CONFIGURAÇÕES ======r
 
 # Caminho do Tesseract (se precisar no Windows)
 # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -54,10 +54,9 @@ while True:
             if is_google_screen():
                 if clicar_icone_busca():
                     carregar_imagem_pokemon(POKEMON_IMG_PATH)
-                    time.sleep(2.5)  # espera o Lens carregar o resultado
+                    time.sleep(3)  # espera o Lens carregar o resultado
                     while check_fail: # Loop de tentativas até acertar o nome
                         nome = extrair_nome_pokemon()
-
                         check_fail, tentativa, contador = enviar_comando_discord(nome, check_fail, tentativa, contador)
                         if check_fail == 2:
                             break
@@ -83,5 +82,5 @@ while True:
                 break
             else:
                 print(f"❌ Não é a tela do Google. Tentando novamente... ({tentativas})")
-                alt_tab("")
+                alt_tab("Chrome")
                 time.sleep(0.2) 

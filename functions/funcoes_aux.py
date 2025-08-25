@@ -119,11 +119,16 @@ def alt_tab(p):
             print("Tentando focar janela do Chrome...")
             janelas = [w for w in gw.getAllWindows() if w.title.endswith(sufixo)]
             focar_janela(janelas[0]) # Foca a janela do Chrome
+    elif p == "Discord":
+        for sufixo in [" - Discord"]:
+            print("Tentando focar janela do Discord...")
+            janelas = [w for w in gw.getAllWindows() if w.title.endswith(sufixo)]
+            focar_janela(janelas[0]) # Foca a janela do Discord
     else:
         for sufixo in ["Chrome", " - Discord"]:
             janelas = [w for w in gw.getAllWindows() if w.title.endswith(sufixo)]
             if janelas:
-                focar_janela(janelas[0])
+                focar_janela(janelas[0]) # Foca o Chrome e depois o Discord
     
 def esta_aberto(processo_nome):
     for proc in psutil.process_iter(['name']):
@@ -157,16 +162,13 @@ def discord_crash():
         pos = None
     return pos is not None
 
-def monitorar_parada():
-    print("Pressione / a qualquer momento para parar o bot.")
-    keyboard.add_hotkey('ctrl+alt+s', lambda: (print("⏹️ Bot interrompido pelo usuário."), sys.exit()))
 # ====== MANIPULAÇÃO DA BAN_LIST ======
 
 def salvar_banlist(lista):
     with open(BANLIST_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(lista))
 
-def adicionar_banida(palavra, palavras_banidas):
+def adicionar_banida(palavra):
     palavras_banidas = carregar_banlist()
     pokemon_validos = carregar_pokemons()
     """Adiciona uma nova palavra na banlist.txt se ainda não estiver lá"""
