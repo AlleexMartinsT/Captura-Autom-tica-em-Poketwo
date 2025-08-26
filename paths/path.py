@@ -17,6 +17,7 @@ POKEMON_FILE = os.path.join(BASE_DIR,"archives", "pokemon_list.txt")
 LOG_FILE = os.path.join(BASE_DIR,"archives", "log.txt")
 BANLIST_FILE = os.path.join(BASE_DIR, "archives", "banlist.txt")
 DISCORD_CRASH = os.path.join(BASE_DIR, "images", "discord_crash.png")
+DISCORD_BUTTON = os.path.join(BASE_DIR, "images", "discord_button.png")
 
 chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 discord_path = r"C:\ProgramData\alex\Discord\Update.exe --processStart Discord.exe"

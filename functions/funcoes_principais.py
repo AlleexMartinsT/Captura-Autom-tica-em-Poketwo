@@ -10,10 +10,10 @@ def esperar_pokemon():
     print("🔄 Iniciando envio de mensagens para spawnar Pokémon...")
     contador = 1
     while True:
-        time.sleep(0.3)  # pequena pausa para evitar uso excessivo da CPU
+        time.sleep(0.4)  # pequena pausa para evitar uso excessivo da CPU
         if discord_crash():
             print("O Discord estava fechado ou com crash. Abrindo o Discord...")
-            pos = pyautogui.locateOnScreen("discord_button.png", confidence=0.8)
+            pos = pyautogui.locateOnScreen(DISCORD_BUTTON, confidence=0.8)
             pyautogui.moveTo(pos)
             pyautogui.click()
             time.sleep(3)
@@ -46,7 +46,7 @@ def esperar_pokemon():
             screenshot = pyautogui.screenshot(region=POKEMON_REGION)
             screenshot.save(POKEMON_IMG_PATH)
             alt_tab("Chrome")
-            time.sleep(SLEEP_ALT_TAB) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 0.2)
+            time.sleep(config.SLEEP_ALT_TAB) # Permitir usuario alterar o time.sleep no futuro. (Padrão: 0.2)
             return contador
         else:
             contador += 1
@@ -77,7 +77,8 @@ def carregar_imagem_pokemon(caminho_imagem):
     """Cola o caminho do arquivo e confirma a busca"""
     time.sleep(1)
     pyautogui.press("enter")
-    time.sleep(SLEEP_CTRLV)
+    print(f"tempo usado: {config.SLEEP_CTRLV}")
+    time.sleep(config.SLEEP_CTRLV)
     pyperclip.copy(caminho_imagem)
     pyautogui.hotkey("ctrl", "v")  # Cola o caminho
     time.sleep(0.5)
@@ -186,10 +187,9 @@ def enviar_comando_discord(nome_pokemon,check_fail,tentativa, contador):
                 check_fail = 0
         else:    
             print("Nada encontrado")
-            pyautogui.typewrite(".clear 5")
+            pyautogui.typewrite(f".clear {contador}")
             pyautogui.press("enter")
             check_fail = 2
-    print("saindo do return")
     return check_fail,tentativa,contador
 
 def interface():
